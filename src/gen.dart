@@ -69,7 +69,7 @@ void main() {
   await FileUtils.createFile(inputFileName, response.body);
 
   // Add to git.
-  final git = await Process.start(
+  var git = await Process.start(
       'git', ['add', codeFileName, testFileName, inputFileName],
       runInShell: true);
   var exitCode = await git.exitCode;

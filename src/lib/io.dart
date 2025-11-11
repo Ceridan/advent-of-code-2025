@@ -2,12 +2,12 @@ import 'dart:io';
 
 class FileUtils {
   static Future<String> readFileAsString(String filePath) async {
-    final asyncFn = () => File(filePath).readAsString();
+    var asyncFn = () => File(filePath).readAsString();
     return _runOrExit(asyncFn);
   }
 
   static Future<List<String>> readFileAsLines(String filePath) async {
-    final asyncFn = () => File(filePath).readAsLines();
+    var asyncFn = () => File(filePath).readAsLines();
     return _runOrExit(asyncFn);
   }
 
