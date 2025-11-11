@@ -1,0 +1,12 @@
+name: advent_of_code_2025
+description: Solutions for https://adventofcode.com/2025
+version: 1.0.0
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+
+dev_dependencies:
+  test: 1.26.3
+
