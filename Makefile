@@ -27,8 +27,8 @@ lint: # Static code analysis
 fix: # Static code analysis
 	@dart fix --apply
 
-.PHONY: exec
-exec: # Run day XX
+.PHONY: run
+run: # Run day XX
 	@dart run src/$(day)/day$(day).dart
 
 .PHONY: test
