@@ -5,28 +5,28 @@ class Instruction {
   final int value;
 
   Instruction(this.direction, this.value);
-}
 
-_parseInstructions(List<String> input) {
-  var instructions = [];
-  input.forEach((line) {
-    if (line.isEmpty) {
-      return;
-    }
-    var dir = line.substring(0, 1);
-    var val = int.parse(line.substring(1));
-    instructions.add(Instruction(dir, val));
-  });
-  return instructions;
+  static List<Instruction> parseLines(List<String> lines) {
+    List<Instruction> instructions = [];
+    lines.forEach((line) {
+      if (line.isEmpty) {
+        return;
+      }
+      var dir = line.substring(0, 1);
+      var val = int.parse(line.substring(1));
+      instructions.add(Instruction(dir, val));
+    });
+    return instructions;
+  }
 }
 
 part1(data) {
-  var instructions = _parseInstructions(data);
+  var instructions = Instruction.parseLines(data);
   var zeroes = 0;
   var pos = 50;
   instructions.forEach((instr) {
     var sign = instr.direction == 'L' ? -1 : 1;
-    pos = ((pos + sign * instr.value) % 100) as int;
+    pos = ((pos + sign * instr.value) % 100);
     if (pos == 0) {
       zeroes++;
     }
@@ -35,13 +35,13 @@ part1(data) {
 }
 
 part2(data) {
-  var instructions = _parseInstructions(data);
+  var instructions = Instruction.parseLines(data);
   var zeroes = 0;
   var pos = 50;
   instructions.forEach((instr) {
     var sign = instr.direction == 'L' ? -1 : 1;
-    var newPos = ((pos + sign * instr.value) % 100) as int;
-    zeroes += (instr.value ~/ 100).abs() as int;
+    var newPos = ((pos + sign * instr.value) % 100);
+    zeroes += (instr.value ~/ 100).abs();
     if (instr.direction == 'L' && pos != 0 && (newPos > pos || newPos == 0)) {
       zeroes++;
     }
