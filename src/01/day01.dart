@@ -20,37 +20,36 @@ class Instruction {
   }
 }
 
-part1(data) {
-  var instructions = Instruction.parseLines(data);
-  var zeroes = 0;
-  var pos = 50;
-  instructions.forEach((instr) {
-    var sign = instr.direction == 'L' ? -1 : 1;
-    pos = ((pos + sign * instr.value) % 100);
-    if (pos == 0) {
-      zeroes++;
-    }
-  });
-  return zeroes;
-}
-
-part2(data) {
+int processInstructions(List<String> data,
+    int Function(Instruction, int prevPos, int newPos) calcZeroesFn) {
   var instructions = Instruction.parseLines(data);
   var zeroes = 0;
   var pos = 50;
   instructions.forEach((instr) {
     var sign = instr.direction == 'L' ? -1 : 1;
     var newPos = ((pos + sign * instr.value) % 100);
-    zeroes += (instr.value ~/ 100).abs();
-    if (instr.direction == 'L' && pos != 0 && (newPos > pos || newPos == 0)) {
-      zeroes++;
-    }
-    if (instr.direction == 'R' && pos != 0 && newPos < pos) {
-      zeroes++;
-    }
+    zeroes += calcZeroesFn(instr, pos, newPos);
     pos = newPos;
   });
   return zeroes;
+}
+
+part1(data) {
+  var calcZeroesFn = (instr, prevPos, newPos) => newPos == 0 ? 1 : 0;
+  return processInstructions(data, calcZeroesFn);
+}
+
+part2(data) {
+  var calcZeroesFn = (Instruction instr, prevPos, newPos) {
+    var zeroes = (instr.value ~/ 100).abs();
+    return switch ((instr.direction, prevPos, newPos)) {
+      (_, 0, _) => zeroes,
+      ('L', int pp, int np) when np > pp || np == 0 => ++zeroes,
+      ('R', int pp, int np) when np < pp => ++zeroes,
+      _ => zeroes,
+    };
+  };
+  return processInstructions(data, calcZeroesFn);
 }
 
 void main() async {
