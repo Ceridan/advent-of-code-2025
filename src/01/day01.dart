@@ -35,7 +35,22 @@ part1(data) {
 }
 
 part2(data) {
-  return 0;
+  var instructions = _parseInstructions(data);
+  var zeroes = 0;
+  var pos = 50;
+  instructions.forEach((instr) {
+    var sign = instr.direction == 'L' ? -1 : 1;
+    var newPos = ((pos + sign * instr.value) % 100) as int;
+    zeroes += (instr.value ~/ 100).abs() as int;
+    if (instr.direction == 'L' && pos != 0 && (newPos > pos || newPos == 0)) {
+      zeroes++;
+    }
+    if (instr.direction == 'R' && pos != 0 && newPos < pos) {
+      zeroes++;
+    }
+    pos = newPos;
+  });
+  return zeroes;
 }
 
 void main() async {
