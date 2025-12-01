@@ -44,8 +44,8 @@ part2(data) {
     var zeroes = (instr.value ~/ 100).abs();
     return switch ((instr.direction, prevPos, newPos)) {
       (_, 0, _) => zeroes,
-      ('L', int pp, int np) when np > pp || np == 0 => ++zeroes,
-      ('R', int pp, int np) when np < pp => ++zeroes,
+      ('L', int p, int n) when n > p || n == 0 => ++zeroes,
+      ('R', int p, int n) when n < p => ++zeroes,
       _ => zeroes,
     };
   };
