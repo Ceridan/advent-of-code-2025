@@ -15,6 +15,7 @@ direnv: # Set environment varaibales
 ##############################################################################
 # Development
 ##############################################################################
+# Default to the current day
 day ?= $(shell date +%d)
 
 .PHONY: format
