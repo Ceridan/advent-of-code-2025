@@ -15,6 +15,8 @@ direnv: # Set environment varaibales
 ##############################################################################
 # Development
 ##############################################################################
+day ?= $(shell date +%d)
+
 .PHONY: format
 format: # Format code
 	@dart format src/**/*.dart
