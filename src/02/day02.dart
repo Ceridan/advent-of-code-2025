@@ -17,64 +17,57 @@ class ProductIdRange {
   }
 }
 
-int checkIdRange(ProductIdRange range) {
-  var invalidSum = 0;
-  for (int val = range.left; val <= range.right; val++) {
-    var valStr = val.toString();
-    if (valStr.length % 2 == 1) {
+int checkAtLeastTwice(int val) {
+  var valStr = val.toString();
+  if (valStr.length % 2 == 1) {
+    return 0;
+  }
+
+  var mid = valStr.length ~/ 2;
+  var left = valStr.substring(0, mid);
+  var right = valStr.substring(mid);
+
+  return left == right ? val : 0;
+}
+
+int checkAtMostTwice(int val) {
+  var valStr = val.toString();
+  outerLoop:
+  for (int i = (valStr.length ~/ 2); i >= 1; i--) {
+    if (valStr.length % i != 0) {
       continue;
     }
 
-    var mid = valStr.length ~/ 2;
-    var left = valStr.substring(0, mid);
-    var right = valStr.substring(mid);
-
-    if (left == right) {
-      invalidSum += val;
+    for (int j = i; j < valStr.length; j += i) {
+      if (valStr.substring(j - i, j) != valStr.substring(j, j + i)) {
+        continue outerLoop;
+      }
     }
-  }
 
-  return invalidSum;
+    return val;
+  }
+  return 0;
 }
 
-int checkIdRange2(ProductIdRange range) {
+int processIdRanges(
+    List<ProductIdRange> ranges, int Function(int val) checkFn) {
   var invalidSum = 0;
-  for (int val = range.left; val <= range.right; val++) {
-    var valStr = val.toString();
-    outerLoop:
-    for (int i = (valStr.length ~/ 2); i >= 1; i--) {
-      if (valStr.length % i != 0) {
-        continue;
-      }
-      for (int j = i; j < valStr.length; j += i) {
-        if (valStr.substring(j - i, j) != valStr.substring(j, j + i)) {
-          continue outerLoop;
-        }
-      }
-      invalidSum += val;
-      break outerLoop;
+  ranges.forEach((range) {
+    for (int val = range.left; val <= range.right; val++) {
+      invalidSum += checkFn(val);
     }
-  }
-
+  });
   return invalidSum;
 }
 
 part1(data) {
-  var invalidSum = 0;
   var idRanges = ProductIdRange.parseIds(data);
-  idRanges.forEach((range) {
-    invalidSum += checkIdRange(range);
-  });
-  return invalidSum;
+  return processIdRanges(idRanges, checkAtLeastTwice);
 }
 
 part2(data) {
-  var invalidSum = 0;
   var idRanges = ProductIdRange.parseIds(data);
-  idRanges.forEach((range) {
-    invalidSum += checkIdRange2(range);
-  });
-  return invalidSum;
+  return processIdRanges(idRanges, checkAtMostTwice);
 }
 
 void main() async {
