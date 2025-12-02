@@ -7,7 +7,7 @@ class Instruction {
   Instruction(this.direction, this.value);
 
   static List<Instruction> parseLines(List<String> lines) {
-    List<Instruction> instructions = [];
+    var instructions = <Instruction>[];
     lines.forEach((line) {
       if (line.isEmpty) {
         return;
