@@ -37,6 +37,28 @@ int checkIdRange(ProductIdRange range) {
   return invalidSum;
 }
 
+int checkIdRange2(ProductIdRange range) {
+  var invalidSum = 0;
+  for (int val = range.left; val <= range.right; val++) {
+    var valStr = val.toString();
+    outerLoop:
+    for (int i = (valStr.length ~/ 2); i >= 1; i--) {
+      if (valStr.length % i != 0) {
+        continue;
+      }
+      for (int j = i; j < valStr.length; j += i) {
+        if (valStr.substring(j - i, j) != valStr.substring(j, j + i)) {
+          continue outerLoop;
+        }
+      }
+      invalidSum += val;
+      break outerLoop;
+    }
+  }
+
+  return invalidSum;
+}
+
 part1(data) {
   var invalidSum = 0;
   var idRanges = ProductIdRange.parseIds(data);
@@ -47,7 +69,12 @@ part1(data) {
 }
 
 part2(data) {
-  return 0;
+  var invalidSum = 0;
+  var idRanges = ProductIdRange.parseIds(data);
+  idRanges.forEach((range) {
+    invalidSum += checkIdRange2(range);
+  });
+  return invalidSum;
 }
 
 void main() async {
