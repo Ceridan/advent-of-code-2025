@@ -47,5 +47,3 @@ void main() async {
   print('Day 03, part1: ${part1(input)}');
   print('Day 03, part2: ${part2(input)}');
 }
-
-// 16852 is too low
