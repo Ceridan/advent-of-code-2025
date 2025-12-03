@@ -1,32 +1,44 @@
 import '../lib/io.dart';
 
-int processBank(String bank) {
-  var zeroRune = '0'.codeUnitAt(0);
-  var r1 = bank.codeUnitAt(0);
-  var r2 = bank.codeUnitAt(1);
-  for (int i = 1; i < bank.length; i++) {
-    if (i < bank.length - 1 && bank.codeUnitAt(i) > r1) {
-      r1 = bank.codeUnitAt(i);
-      r2 = bank.codeUnitAt(i + 1);
-    } else if (bank.codeUnitAt(i) > r2) {
-      r2 = bank.codeUnitAt(i);
+(int, int) findHighest(String bank, int startIdx, int size) {
+  var idx = startIdx;
+  var r = bank.codeUnitAt(startIdx);
+  for (int i = startIdx + 1; i <= bank.length - size; i++) {
+    var c = bank.codeUnitAt(i);
+    if (r < c) {
+      r = c;
+      idx = i;
     }
   }
-  var joltage = (r1 - zeroRune) * 10 + (r2 - zeroRune);
-  print('joltage = $joltage, bank = $bank');
+  return (r, idx);
+}
+
+int processBank(String bank, int numBatteries) {
+  var zeroRune = '0'.codeUnitAt(0);
+  var joltage = 0;
+  var startIdx = 0;
+  for (int i = numBatteries; i >= 1; i--) {
+    var (r, idx) = findHighest(bank, startIdx, i);
+    startIdx = idx + 1;
+    joltage = joltage * 10 + (r - zeroRune);
+  }
+  return joltage;
+}
+
+int calculateJoltage(data, int numBatteries) {
+  var joltage = 0;
+  for (String bank in data) {
+    joltage += processBank(bank, numBatteries);
+  }
   return joltage;
 }
 
 part1(data) {
-  var joltage = 0;
-  for (String bank in data) {
-    joltage += processBank(bank);
-  }
-  return joltage;
+  return calculateJoltage(data, 2);
 }
 
 part2(data) {
-  return 0;
+  return calculateJoltage(data, 12);
 }
 
 void main() async {

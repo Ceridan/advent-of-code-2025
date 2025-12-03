@@ -17,7 +17,7 @@ void main() {
 
   group('Part2', () {
     test('sample', () {
-      expect(part2('test'), equals(0));
+      expect(part2(banks), equals(3121910778619));
     });
   });
 }
