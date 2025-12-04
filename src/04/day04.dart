@@ -5,16 +5,6 @@ import '../lib/io.dart';
   var lines = input.split('\n').where((l) => l.isNotEmpty).toList();
   var (ysize, xsize) = (lines.length, lines[0].length);
 
-  for (int x = -1; x <= xsize; x++) {
-    map[(-1, x)] = '.';
-    map[(ysize, x)] = '.';
-  }
-
-  for (int y = -1; y <= ysize; y++) {
-    map[(y, -1)] = '.';
-    map[(y, xsize)] = '.';
-  }
-
   for (int y = 0; y < ysize; y++) {
     var line = lines[y];
     for (int x = 0; x < xsize; x++) {
@@ -27,13 +17,9 @@ import '../lib/io.dart';
 (Map<(int, int), String>, int) calculateNextMap(map, ysize, xsize) {
   var newMap = <(int, int), String>{};
   var removedRolls = 0;
-  for (int y = -1; y <= ysize; y++) {
-    for (int x = -1; x <= xsize; x++) {
-      if (map[(y, x)] == '.' ||
-          x == -1 ||
-          x == xsize ||
-          y == -1 ||
-          y == ysize) {
+  for (int y = 0; y < ysize; y++) {
+    for (int x = 0; x < xsize; x++) {
+      if (map[(y, x)] == '.') {
         newMap[(y, x)] = '.';
         continue;
       }
@@ -44,7 +30,11 @@ import '../lib/io.dart';
           if (dy == 0 && dx == 0) {
             continue;
           }
-          if (map[(y + dy, x + dx)] == '@') {
+          var (ny, nx) = (y + dy, x + dx);
+          if (ny == -1 || ny == ysize || nx == -1 || nx == xsize) {
+            continue;
+          }
+          if (map[(ny, nx)] == '@') {
             adj++;
           }
         }
