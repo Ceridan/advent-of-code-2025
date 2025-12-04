@@ -24,12 +24,17 @@ import '../lib/io.dart';
   return (map, ysize, xsize);
 }
 
-part1(data) {
-  var (map, ysize, xsize) = parseInput(data);
-  var rolls = 0;
-  for (int y = 0; y < ysize; y++) {
-    for (int x = 0; x < xsize; x++) {
-      if (map[(y, x)] == '.') {
+(Map<(int, int), String>, int) calculateNextMap(map, ysize, xsize) {
+  var newMap = <(int, int), String>{};
+  var removedRolls = 0;
+  for (int y = -1; y <= ysize; y++) {
+    for (int x = -1; x <= xsize; x++) {
+      if (map[(y, x)] == '.' ||
+          x == -1 ||
+          x == xsize ||
+          y == -1 ||
+          y == ysize) {
+        newMap[(y, x)] = '.';
         continue;
       }
 
@@ -45,15 +50,34 @@ part1(data) {
         }
       }
       if (adj < 4) {
-        rolls++;
+        newMap[(y, x)] = '.';
+        removedRolls++;
+      } else {
+        newMap[(y, x)] = '@';
       }
     }
   }
-  return rolls;
+  return (newMap, removedRolls);
+}
+
+part1(data) {
+  var (map, ysize, xsize) = parseInput(data);
+  var (_, removedRolls) = calculateNextMap(map, ysize, xsize);
+  return removedRolls;
 }
 
 part2(data) {
-  return 0;
+  var (map, ysize, xsize) = parseInput(data);
+  var totalRemovedRolls = 0;
+  while (true) {
+    var (newMap, removedRolls) = calculateNextMap(map, ysize, xsize);
+    totalRemovedRolls += removedRolls;
+    if (removedRolls == 0) {
+      break;
+    }
+    map = newMap;
+  }
+  return totalRemovedRolls;
 }
 
 void main() async {
