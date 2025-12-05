@@ -47,9 +47,11 @@ List<(int, int)> mergeIngredients(List<(int, int)> available) {
 
 part1(data) {
   var (available, ingredients) = parseInput(data);
+  available.sort(compareRange);
+  var merged = mergeIngredients(available);
   var fresh = 0;
   for (var ingredient in ingredients) {
-    for (var (a, b) in available) {
+    for (var (a, b) in merged) {
       if (a <= ingredient && b >= ingredient) {
         fresh++;
         break;
