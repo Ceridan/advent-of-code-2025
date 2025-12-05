@@ -24,7 +24,7 @@ void main() {
 
   group('Part2', () {
     test('sample', () {
-      expect(part2('test'), equals(0));
+      expect(part2(ingredients), equals(14));
     });
   });
 }

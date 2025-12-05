@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import '../lib/io.dart';
 
 (List<(int, int)>, List<int>) parseInput(List<String> input) {
@@ -17,6 +18,33 @@ import '../lib/io.dart';
   return (available, ingredients);
 }
 
+int compareRange(a, b) {
+  var (al, ar) = a;
+  var (bl, br) = b;
+  var left = al.compareTo(bl);
+  if (left != 0) {
+    return left;
+  }
+  return ar.compareTo(br);
+}
+
+List<(int, int)> mergeIngredients(List<(int, int)> available) {
+  var merged = <(int, int)>[];
+  var (al, ar) = available[0];
+  for (var i = 1; i < available.length; i++) {
+    var (bl, br) = available[i];
+    if (ar < bl) {
+      merged.add((al, ar));
+      al = bl;
+      ar = br;
+      continue;
+    }
+    ar = math.max(ar, br);
+  }
+  merged.add((al, ar));
+  return merged;
+}
+
 part1(data) {
   var (available, ingredients) = parseInput(data);
   var fresh = 0;
@@ -32,7 +60,14 @@ part1(data) {
 }
 
 part2(data) {
-  return 0;
+  var (available, _) = parseInput(data);
+  available.sort(compareRange);
+  var merged = mergeIngredients(available);
+  var fresh = 0;
+  for (var (a, b) in merged) {
+    fresh += b - a + 1;
+  }
+  return fresh;
 }
 
 void main() async {
