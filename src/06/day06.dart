@@ -60,13 +60,13 @@ import '../lib/io.dart';
 }
 
 part1(data) {
-  var (ops, rows) = parseByRow(data);
+  var (ops, nums) = parseByRow(data);
   var results = List<int>.generate(
-    rows[0].length,
+    nums[0].length,
     (idx) => ops[idx] == '*' ? 1 : 0,
     growable: false,
   );
-  for (var row in rows) {
+  for (var row in nums) {
     for (int i = 0; i < row.length; i++) {
       if (ops[i] == '*') {
         results[i] *= row[i];
