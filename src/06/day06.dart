@@ -1,6 +1,6 @@
 import '../lib/io.dart';
 
-(List<String>, List<List<int>>, int) parseByRow(String input) {
+(List<String>, List<List<int>>) parseByRow(String input) {
   var rows = <List<int>>[];
   var lines = input.split('\n').where((l) => l.isNotEmpty).toList();
   for (int i = 0; i < lines.length - 1; i++) {
@@ -14,10 +14,10 @@ import '../lib/io.dart';
 
   var ops =
       lines[lines.length - 1].split(' ').where((l) => l.isNotEmpty).toList();
-  return (ops, rows, rows[0].length);
+  return (ops, rows);
 }
 
-(List<String>, List<List<int>>, int) parseByColumn(String input) {
+(List<String>, List<List<int>>) parseByColumn(String input) {
   var lines = input.split('\n').where((l) => l.isNotEmpty).toList();
   var sizes = <int>[];
   var ops = <String>[];
@@ -56,13 +56,13 @@ import '../lib/io.dart';
     }
   }
 
-  return (ops, nums, sizes.length);
+  return (ops, nums);
 }
 
 part1(data) {
-  var (ops, rows, n) = parseByRow(data);
+  var (ops, rows) = parseByRow(data);
   var results = List<int>.generate(
-    n,
+    rows[0].length,
     (idx) => ops[idx] == '*' ? 1 : 0,
     growable: false,
   );
@@ -79,7 +79,7 @@ part1(data) {
 }
 
 part2(data) {
-  var (ops, nums, n) = parseByColumn(data);
+  var (ops, nums) = parseByColumn(data);
   var grandTotal = 0;
   for (int i = 0; i < nums.length; i++) {
     if (ops[i] == '*') {
