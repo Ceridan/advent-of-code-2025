@@ -1,94 +1,85 @@
+import 'dart:math' as math;
 import '../lib/io.dart';
 
-(List<String>, List<List<int>>) parseByRow(String input) {
-  var rows = <List<int>>[];
-  var lines = input.split('\n').where((l) => l.isNotEmpty).toList();
-  for (int i = 0; i < lines.length - 1; i++) {
-    var row = <int>[];
-    var line = lines[i].split(' ').where((l) => l.isNotEmpty).toList();
-    for (var s in line) {
-      row.add(int.parse(s));
+(List<List<String>>, List<String>) readAsMatrixAndOps(String data) {
+  var lines = data.split('\n').where((l) => l.isNotEmpty).toList();
+  var longest = lines.map((l) => l.length).reduce(math.max);
+  var matrix = <List<String>>[];
+  for (int r = 0; r < lines.length - 1; r++) {
+    var cols = <String>[];
+    for (int c = 0; c < longest; c++) {
+      var ch = c < lines[r].length ? lines[r][c] : ' ';
+      cols.add(ch);
     }
-    rows.add(row);
+    matrix.add(cols);
   }
 
   var ops =
       lines[lines.length - 1].split(' ').where((l) => l.isNotEmpty).toList();
-  return (ops, rows);
+  return (matrix, ops);
 }
 
-(List<String>, List<List<int>>) parseByColumn(String input) {
-  var lines = input.split('\n').where((l) => l.isNotEmpty).toList();
-  var sizes = <int>[];
-  var ops = <String>[];
-  var lastLine = lines[lines.length - 1];
+List<List<int>> parseNumbersByRow(List<List<String>> matrix, int n) {
+  var nums = List<List<int>>.generate(n, (idx) => []);
+  for (var row in matrix) {
+    var rowNums = row
+        .join()
+        .split(' ')
+        .where((r) => r.isNotEmpty)
+        .map((v) => int.parse(v))
+        .toList();
+    for (int i = 0; i < n; i++) {
+      nums[i].add(rowNums[i]);
+    }
+  }
+  return nums;
+}
+
+List<List<int>> parseNumbersByColumn(List<List<String>> matrix, int n) {
+  var nums = List<List<int>>.generate(n, (idx) => []);
   var k = 0;
-  for (int i = 0; i < lastLine.length; i++) {
-    if (lastLine[i] == ' ') {
-      k++;
+  for (int c = 0; c < matrix[0].length; c++) {
+    var val = 0;
+    for (int r = 0; r < matrix.length; r++) {
+      if (matrix[r][c] != ' ') {
+        val = val * 10 + int.parse(matrix[r][c]);
+      }
+    }
+    if (val > 0) {
+      nums[k].add(val);
     } else {
-      ops.add(lastLine[i]);
-      if (i > 0) {
-        sizes.add(k);
-      }
-      k = 0;
+      k++;
     }
   }
-  sizes.add(k + 1);
+  return nums;
+}
 
-  var nums = <List<int>>[];
-  for (int j = 0; j < sizes.length; j++) {
-    nums.add(List<int>.filled(sizes[j], 0, growable: false));
+int applyOpertaion(List<int> nums, String op) {
+  if (op == '*') {
+    return nums.reduce((acc, val) => acc * val);
+  } else {
+    return nums.reduce((acc, val) => acc + val);
   }
-  for (int i = 0; i < lines.length - 1; i++) {
-    var shift = 0;
-    for (int j = 0; j < sizes.length; j++) {
-      for (int k = 0; k < sizes[j]; k++) {
-        if (shift + k == lines[i].length) {
-          break;
-        }
-        var ch = lines[i][shift + k];
-        if (ch != ' ') {
-          nums[j][k] = nums[j][k] * 10 + int.parse(ch);
-        }
-      }
-      shift = shift + sizes[j] + 1;
-    }
-  }
+}
 
-  return (ops, nums);
+int calculateGrandTotal(List<List<int>> nums, List<String> ops) {
+  var grandTotal = 0;
+  for (int i = 0; i < ops.length; i++) {
+    grandTotal += applyOpertaion(nums[i], ops[i]);
+  }
+  return grandTotal;
 }
 
 part1(data) {
-  var (ops, nums) = parseByRow(data);
-  var results = List<int>.generate(
-    nums[0].length,
-    (idx) => ops[idx] == '*' ? 1 : 0,
-    growable: false,
-  );
-  for (var row in nums) {
-    for (int i = 0; i < row.length; i++) {
-      if (ops[i] == '*') {
-        results[i] *= row[i];
-      } else {
-        results[i] += row[i];
-      }
-    }
-  }
-  return results.reduce((acc, el) => acc + el);
+  var (matrix, ops) = readAsMatrixAndOps(data);
+  var nums = parseNumbersByRow(matrix, ops.length);
+  return calculateGrandTotal(nums, ops);
 }
 
 part2(data) {
-  var (ops, nums) = parseByColumn(data);
-  var grandTotal = 0;
-  for (int i = 0; i < nums.length; i++) {
-    if (ops[i] == '*') {
-      grandTotal += nums[i].reduce((acc, el) => acc * el);
-    } else {
-      grandTotal += nums[i].reduce((acc, el) => acc + el);
-    }
-  }
-  return grandTotal;
+  var (matrix, ops) = readAsMatrixAndOps(data);
+  var nums = parseNumbersByColumn(matrix, ops.length);
+  return calculateGrandTotal(nums, ops);
 }
 
 void main() async {
