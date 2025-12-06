@@ -1,6 +1,6 @@
 import '../lib/io.dart';
 
-(List<String>, List<List<int>>, int) parseInput(String input) {
+(List<String>, List<List<int>>, int) parseByRow(String input) {
   var rows = <List<int>>[];
   var lines = input.split('\n').where((l) => l.isNotEmpty).toList();
   for (int i = 0; i < lines.length - 1; i++) {
@@ -17,8 +17,50 @@ import '../lib/io.dart';
   return (ops, rows, rows[0].length);
 }
 
+(List<String>, List<List<int>>, int) parseByColumn(String input) {
+  var lines = input.split('\n').where((l) => l.isNotEmpty).toList();
+  var sizes = <int>[];
+  var ops = <String>[];
+  var lastLine = lines[lines.length - 1];
+  var k = 0;
+  for (int i = 0; i < lastLine.length; i++) {
+    if (lastLine[i] == ' ') {
+      k++;
+    } else {
+      ops.add(lastLine[i]);
+      if (i > 0) {
+        sizes.add(k);
+      }
+      k = 0;
+    }
+  }
+  sizes.add(k + 1);
+
+  var nums = <List<int>>[];
+  for (int j = 0; j < sizes.length; j++) {
+    nums.add(List<int>.filled(sizes[j], 0, growable: false));
+  }
+  for (int i = 0; i < lines.length - 1; i++) {
+    var shift = 0;
+    for (int j = 0; j < sizes.length; j++) {
+      for (int k = 0; k < sizes[j]; k++) {
+        if (shift + k == lines[i].length) {
+          break;
+        }
+        var ch = lines[i][shift + k];
+        if (ch != ' ') {
+          nums[j][k] = nums[j][k] * 10 + int.parse(ch);
+        }
+      }
+      shift = shift + sizes[j] + 1;
+    }
+  }
+
+  return (ops, nums, sizes.length);
+}
+
 part1(data) {
-  var (ops, rows, n) = parseInput(data);
+  var (ops, rows, n) = parseByRow(data);
   var results = List<int>.generate(
     n,
     (idx) => ops[idx] == '*' ? 1 : 0,
@@ -37,7 +79,16 @@ part1(data) {
 }
 
 part2(data) {
-  return 0;
+  var (ops, nums, n) = parseByColumn(data);
+  var grandTotal = 0;
+  for (int i = 0; i < nums.length; i++) {
+    if (ops[i] == '*') {
+      grandTotal += nums[i].reduce((acc, el) => acc * el);
+    } else {
+      grandTotal += nums[i].reduce((acc, el) => acc + el);
+    }
+  }
+  return grandTotal;
 }
 
 void main() async {

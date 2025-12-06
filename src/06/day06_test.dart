@@ -6,8 +6,7 @@ void main() {
 123 328  51 64
  45 64  387 23
   6 98  215 314
-*   +   *   +
-''';
+*   +   *   +  ''';
 
   group('Part1', () {
     test('sample', () {
@@ -17,7 +16,7 @@ void main() {
 
   group('Part2', () {
     test('sample', () {
-      expect(part2('test'), equals(0));
+      expect(part2(homework), equals(3263827));
     });
   });
 }
