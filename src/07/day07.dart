@@ -54,13 +54,39 @@ int countSplits(Set<(int, int)> splitters, (int, int) start) {
   return counter;
 }
 
+int countTimelines(Set<(int, int)> splitters, (int, int) pos, int maxY,
+    Map<(int, int), int> cache) {
+  if (cache.containsKey(pos)) {
+    return cache[pos]!;
+  }
+
+  var (y, x) = pos;
+  if (y > maxY) {
+    return 1;
+  }
+
+  var counter = 0;
+  if (splitters.contains((y, x))) {
+    counter = countTimelines(splitters, (y + 1, x - 1), maxY, cache) +
+        countTimelines(splitters, (y + 1, x + 1), maxY, cache);
+  } else {
+    counter = countTimelines(splitters, (y + 1, x), maxY, cache);
+  }
+
+  cache[(y, x)] = counter;
+  return counter;
+}
+
 part1(data) {
   var (start, splitters) = parseTachyonManfiolds(data);
   return countSplits(splitters, start);
 }
 
 part2(data) {
-  return 0;
+  var (start, splitters) = parseTachyonManfiolds(data);
+  var (minY, maxY, minX, maxX) = getBorders(splitters);
+
+  return countTimelines(splitters, start, maxY, {});
 }
 
 void main() async {
