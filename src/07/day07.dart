@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:math' as math;
 import '../lib/io.dart';
 
@@ -18,31 +17,6 @@ import '../lib/io.dart';
     }
   }
   return (start, splitters);
-}
-
-int countSplits(Set<(int, int)> splitters, (int, int) start, int maxY) {
-  var counter = 0;
-  Set<(int, int)> visited = {};
-  var queue = Queue<(int, int)>.from([start]);
-  while (queue.length > 0) {
-    var (y, x) = queue.removeFirst();
-    if (visited.contains((y, x))) {
-      continue;
-    }
-    visited.add((y, x));
-
-    if (y > maxY) {
-      continue;
-    }
-    if (splitters.contains((y, x))) {
-      counter++;
-      queue.add((y + 1, x - 1));
-      queue.add((y + 1, x + 1));
-    } else {
-      queue.add((y + 1, x));
-    }
-  }
-  return counter;
 }
 
 int countTimelines(Set<(int, int)> splitters, (int, int) pos, int maxY,
@@ -71,7 +45,10 @@ int countTimelines(Set<(int, int)> splitters, (int, int) pos, int maxY,
 part1(data) {
   var (start, splitters) = parseTachyonManfiolds(data);
   var maxY = splitters.map((s) => s.$1).reduce(math.max);
-  return countSplits(splitters, start, maxY);
+  var visited = <(int, int), int>{};
+  var _ = countTimelines(splitters, start, maxY, visited);
+  var splits = splitters.intersection(visited.keys.toSet());
+  return splits.length;
 }
 
 part2(data) {
