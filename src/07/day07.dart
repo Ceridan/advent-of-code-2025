@@ -1,7 +1,6 @@
-import 'dart:math' as math;
 import '../lib/io.dart';
 
-((int, int), Set<(int, int)>) parseTachyonManfiolds(String data) {
+(Set<(int, int)>, (int, int), int) parseTachyonManfiolds(String data) {
   Set<(int, int)> splitters = {};
   var start = (0, 0);
   var lines = data.split('\n').where((l) => l.isNotEmpty).toList();
@@ -16,7 +15,7 @@ import '../lib/io.dart';
       }
     }
   }
-  return (start, splitters);
+  return (splitters, start, lines.length);
 }
 
 int countTimelines(Set<(int, int)> splitters, (int, int) pos, int maxY,
@@ -43,8 +42,7 @@ int countTimelines(Set<(int, int)> splitters, (int, int) pos, int maxY,
 }
 
 part1(data) {
-  var (start, splitters) = parseTachyonManfiolds(data);
-  var maxY = splitters.map((s) => s.$1).reduce(math.max);
+  var (splitters, start, maxY) = parseTachyonManfiolds(data);
   var visited = <(int, int), int>{};
   var _ = countTimelines(splitters, start, maxY, visited);
   var splits = splitters.intersection(visited.keys.toSet());
@@ -52,8 +50,7 @@ part1(data) {
 }
 
 part2(data) {
-  var (start, splitters) = parseTachyonManfiolds(data);
-  var maxY = splitters.map((s) => s.$1).reduce(math.max);
+  var (splitters, start, maxY) = parseTachyonManfiolds(data);
   return countTimelines(splitters, start, maxY, {});
 }
 
