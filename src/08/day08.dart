@@ -1,62 +1,15 @@
-import 'dart:math' as math;
 import '../lib/io.dart';
 import '../lib/point3d.dart';
 
-Map<Point3D, int> parseBoxes(String input) {
-  var lines = input.split('\n').where((l) => l.isNotEmpty).toList();
-  var map = <Point3D, int>{};
-  for (int i = 0; i < lines.length; i++) {
-    var [x, y, z] = lines[i].split(',').map(int.parse).toList();
-    var point = Point3D(x, y, z);
-    map[point] = i;
-  }
-  return map;
-}
+class JoinedSet {
+  final _groups = <int, Set<Point3D>>{};
+  var _nextId = 0;
 
-Map<(Point3D, Point3D), double> calculateDistances(List<Point3D> boxes) {
-  var dist = <(Point3D, Point3D), double>{};
-  for (int i = 0; i < boxes.length - 1; i++) {
-    for (int j = i + 1; j < boxes.length; j++) {
-      dist[(boxes[i], boxes[j])] = boxes[i].distance(boxes[j]);
-    }
-  }
-  return dist;
-}
-
-connect(Map<Point3D, int> boxes, Map<(Point3D, Point3D), double> dist,
-    int connNum) {
-  var invertedDist = <double, (Point3D, Point3D)>{};
-  dist.forEach((key, value) => invertedDist[value] = key);
-  print(
-      'boxes = ${boxes.length}, dist = ${dist.length}, inv = ${invertedDist.length}');
-  var distVals = dist.values.toList();
-  distVals.sort();
-  for (int i = 0; i < connNum; i++) {
-    var (p1, p2) = invertedDist[distVals[i]]!;
-    var id = math.min(boxes[p1]!, boxes[p2]!);
-    for (var p in boxes.keys) {
-      if (boxes[p] == boxes[p1] || boxes[p] == boxes[p2]) {
-        boxes[p] = id;
-      }
-    }
-  }
-}
-
-Map<int, Set<Point3D>> connect2(Map<Point3D, int> boxes,
-    Map<(Point3D, Point3D), double> dist, int connNum) {
-  var groups = <int, Set<Point3D>>{};
-  var invertedDist = <double, (Point3D, Point3D)>{};
-  dist.forEach((key, value) => invertedDist[value] = key);
-  print(
-      'boxes = ${boxes.length}, dist = ${dist.length}, inv = ${invertedDist.length}');
-  var distVals = dist.values.toList();
-  distVals.sort();
-  for (int i = 0; i < connNum; i++) {
-    var (p1, p2) = invertedDist[distVals[i]]!;
+  add(Point3D p1, Point3D p2) {
     var k1 = -1;
     var k2 = -1;
 
-    for (var entry in groups.entries) {
+    for (var entry in _groups.entries) {
       if (entry.value.contains(p1)) {
         k1 = entry.key;
       }
@@ -66,53 +19,97 @@ Map<int, Set<Point3D>> connect2(Map<Point3D, int> boxes,
     }
 
     if (k1 == -1 && k2 == -1) {
-      groups[math.min(boxes[p1]!, boxes[p2]!)] = {p1, p2};
-      continue;
+      _groups[_nextId++] = {p1, p2};
+      return;
     }
     if (k1 == k2) {
-      continue;
+      return;
     }
 
     if (k1 == -1) {
-      groups[k2]!.add(p1);
-      continue;
+      _groups[k2]!.add(p1);
+      return;
     }
-
     if (k2 == -1) {
-      groups[k1]!.add(p2);
-      continue;
+      _groups[k1]!.add(p2);
+      return;
     }
 
-    groups[k1] = groups[k1]!.union(groups[k2]!);
-    groups.remove(k2);
+    _groups[k1] = _groups[k1]!.union(_groups[k2]!);
+    _groups.remove(k2);
   }
-  return groups;
+
+  List<Set<Point3D>> list() {
+    return _groups.values.toList();
+  }
+
+  int length() {
+    return _groups.length;
+  }
 }
 
-Map<int, int> calculateFrequences(Map<Point3D, int> boxes) {
-  var freq = <int, int>{};
-  for (var val in boxes.values) {
-    freq.update(val, (count) => count + 1, ifAbsent: () => 1);
+List<Point3D> parseBoxes(String input) {
+  var lines = input.split('\n').where((l) => l.isNotEmpty).toList();
+  var boxes = <Point3D>[];
+  for (var line in lines) {
+    var [x, y, z] = line.split(',').map(int.parse).toList();
+    var point = Point3D(x, y, z);
+    boxes.add(point);
   }
-  return freq;
+  return boxes;
+}
+
+Map<double, (Point3D, Point3D)> calculateDistances(List<Point3D> boxes) {
+  var dist = <double, (Point3D, Point3D)>{};
+  for (int i = 0; i < boxes.length - 1; i++) {
+    for (int j = i + 1; j < boxes.length; j++) {
+      var d = boxes[i].distance(boxes[j]);
+      dist[d] = (boxes[i], boxes[j]);
+    }
+  }
+  return dist;
+}
+
+JoinedSet connectN(List<Point3D> boxes, int connNum) {
+  var joinedSet = JoinedSet();
+  var dist = calculateDistances(boxes);
+  var distVals = dist.keys.toList();
+  distVals.sort();
+  for (int i = 0; i < connNum; i++) {
+    var (p1, p2) = dist[distVals[i]]!;
+    joinedSet.add(p1, p2);
+  }
+  return joinedSet;
+}
+
+(Point3D, Point3D) connectAll(List<Point3D> boxes) {
+  var joinedSet = JoinedSet();
+  var dist = calculateDistances(boxes);
+  var distVals = dist.keys.toList();
+  distVals.sort();
+  int i = 0;
+  while (true) {
+    var (p1, p2) = dist[distVals[i++]]!;
+    joinedSet.add(p1, p2);
+
+    if (joinedSet.length() == 1 && joinedSet.list()[0].length == boxes.length) {
+      return (p1, p2);
+    }
+  }
 }
 
 part1(data, connections) {
   var boxes = parseBoxes(data);
-  var dist = calculateDistances(boxes.keys.toList());
-  var groups = connect2(boxes, dist, connections);
-  var sizes = groups.values.map((g) => g.length).toList();
+  var joinedSet = connectN(boxes, connections);
+  var sizes = joinedSet.list().map((g) => g.length).toList();
   sizes.sort((a, b) => b - a);
   return sizes.take(3).reduce((acc, val) => acc * val);
-  // connect(boxes, dist, connections);
-  // var freqs = calculateFrequences(boxes);
-  // var values = freqs.values.toList();
-  // values.sort((a, b) => b - a);
-  // return values.take(3).reduce((acc, val) => acc * val);
 }
 
 part2(data) {
-  return 0;
+  var boxes = parseBoxes(data);
+  var (p1, p2) = connectAll(boxes);
+  return p1.x * p2.x;
 }
 
 void main() async {
@@ -121,5 +118,3 @@ void main() async {
   print('Day 08, part1: ${part1(input, 1000)}');
   print('Day 08, part2: ${part2(input)}');
 }
-
-// 13920 - too low
