@@ -12,81 +12,24 @@ List<Point> parseInput(String input) {
   return points;
 }
 
-(Point, Point) getBoundaries(List<Point> points) {
-  int minX = 1000000;
-  int maxX = -1;
-  int minY = 1000000;
-  int maxY = -1;
-
-  for (var p in points) {
-    minX = math.min(minX, p.x);
-    maxX = math.max(maxX, p.x);
-    minY = math.min(minY, p.y);
-    maxY = math.max(maxY, p.y);
-  }
-  return (Point(minX, minY), Point(maxX, maxY));
-}
-
-bool checkSegment(Point testPoint, Point s1, Point s2) {
-  if (testPoint.x == s1.x && testPoint.x == s2.x) {
-    return (testPoint.y >= math.min(s1.y, s2.y) &&
-        testPoint.y <= math.max(s1.y, s2.y));
-  } else if (testPoint.y == s1.y && testPoint.y == s2.y) {
-    return (testPoint.x >= math.min(s1.x, s2.x) &&
-        testPoint.x <= math.max(s1.x, s2.x));
-  }
-  return false;
-}
-
-bool checkRayCasting(
-    Point testPoint, List<Point> points, Point minPoint, Point maxPoint) {
-  if (testPoint.x < minPoint.x ||
-      testPoint.x > maxPoint.x ||
-      testPoint.y < minPoint.y ||
-      testPoint.y > maxPoint.y) {
-    return false;
-  }
-
-  int intersections = 0;
-  for (int i = 0; i < points.length; i++) {
-    var p1 = points[i];
-    var p2 = points[(i + 1) % points.length];
-
-    if (checkSegment(testPoint, p1, p2)) {
-      return true;
-    }
-
-    if (p1.x != p2.x) {
-      continue;
-    }
-
-    if (p1.x > testPoint.x &&
-        ((p1.y <= testPoint.y && testPoint.y < p2.y) ||
-            (p2.y <= testPoint.y && testPoint.y < p1.y))) {
-      intersections++;
-    }
-  }
-
-  return intersections % 2 == 1;
-}
-
-bool checkSegmentIntersection(Point rp1, Point rp2, List<Point> points) {
-  var minX = math.min(rp1.x, rp2.x);
-  var maxX = math.max(rp1.x, rp2.x);
-  var minY = math.min(rp1.y, rp2.y);
-  var maxY = math.max(rp1.y, rp2.y);
+bool checkSegmentIntersection(
+    Point rectPoint1, Point rectPoint2, List<Point> points) {
+  var rectMinX = math.min(rectPoint1.x, rectPoint2.x);
+  var rectMaxX = math.max(rectPoint1.x, rectPoint2.x);
+  var rectMinY = math.min(rectPoint1.y, rectPoint2.y);
+  var rectMaxY = math.max(rectPoint1.y, rectPoint2.y);
 
   for (int i = 0; i < points.length; i++) {
     var p1 = points[i];
     var p2 = points[(i + 1) % points.length];
 
     if (p1.x == p2.x) {
-      var pMin = math.min(p1.y, p2.y);
-      var pMax = math.max(p1.y, p2.y);
+      var minY = math.min(p1.y, p2.y);
+      var maxY = math.max(p1.y, p2.y);
 
-      if (minX < p1.x && p1.x < maxX) {
-        var start = math.max(minY, pMin);
-        var end = math.min(maxY, pMax);
+      if (rectMinX < p1.x && p1.x < rectMaxX) {
+        var start = math.max(rectMinY, minY);
+        var end = math.min(rectMaxY, maxY);
         if (start < end) {
           return false;
         }
@@ -94,12 +37,12 @@ bool checkSegmentIntersection(Point rp1, Point rp2, List<Point> points) {
     }
 
     if (p1.y == p2.y) {
-      var pMin = math.min(p1.x, p2.x);
-      var pMax = math.max(p1.x, p2.x);
+      var minX = math.min(p1.x, p2.x);
+      var maxX = math.max(p1.x, p2.x);
 
-      if (minY < p1.y && p1.y < maxY) {
-        var start = math.max(minX, pMin);
-        var end = math.min(maxX, pMax);
+      if (rectMinY < p1.y && p1.y < rectMaxY) {
+        var start = math.max(rectMinX, minX);
+        var end = math.min(rectMaxX, maxX);
         if (start < end) {
           return false;
         }
@@ -109,39 +52,35 @@ bool checkSegmentIntersection(Point rp1, Point rp2, List<Point> points) {
   return true;
 }
 
-part1(data) {
-  var points = parseInput(data).toList();
-  var area = 0;
+int calculateMaxArea(List<Point> points, bool Function(Point, Point) condFn) {
+  var largestArea = 0;
   for (int i = 0; i < points.length - 1; i++) {
     for (int j = i + 1; j < points.length; j++) {
       var px = (points[i].x - points[j].x).abs() + 1;
       var py = (points[i].y - points[j].y).abs() + 1;
-      area = math.max(area, px * py);
-    }
-  }
-  return area;
-}
-
-part2(data) {
-  var points = parseInput(data);
-  var (minPoint, maxPoint) = getBoundaries(points);
-  var largestArea = 0;
-  for (int i = 0; i < points.length - 1; i++) {
-    for (int j = i + 1; j < points.length; j++) {
-      var (p1, p2) = (points[i], points[j]);
-      var px = (p1.x - p2.x).abs() + 1;
-      var py = (p1.y - p2.y).abs() + 1;
       var area = px * py;
       if (area <= largestArea) {
         continue;
       }
-      if (!checkSegmentIntersection(p1, p2, points)) {
+      if (!condFn(points[i], points[j])) {
         continue;
       }
       largestArea = area;
     }
   }
   return largestArea;
+}
+
+part1(data) {
+  var points = parseInput(data).toList();
+  var condFn = (p1, p2) => true;
+  return calculateMaxArea(points, condFn);
+}
+
+part2(data) {
+  var points = parseInput(data);
+  var condFn = (p1, p2) => checkSegmentIntersection(p1, p2, points);
+  return calculateMaxArea(points, condFn);
 }
 
 void main() async {
