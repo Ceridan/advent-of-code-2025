@@ -70,6 +70,45 @@ bool checkRayCasting(
   return intersections % 2 == 1;
 }
 
+bool checkSegmentIntersection(Point rp1, Point rp2, List<Point> points) {
+  var minX = math.min(rp1.x, rp2.x);
+  var maxX = math.max(rp1.x, rp2.x);
+  var minY = math.min(rp1.y, rp2.y);
+  var maxY = math.max(rp1.y, rp2.y);
+
+  for (int i = 0; i < points.length; i++) {
+    var p1 = points[i];
+    var p2 = points[(i + 1) % points.length];
+
+    if (p1.x == p2.x) {
+      var pMin = math.min(p1.y, p2.y);
+      var pMax = math.max(p1.y, p2.y);
+
+      if (minX < p1.x && p1.x < maxX) {
+        var start = math.max(minY, pMin);
+        var end = math.min(maxY, pMax);
+        if (start < end) {
+          return false;
+        }
+      }
+    }
+
+    if (p1.y == p2.y) {
+      var pMin = math.min(p1.x, p2.x);
+      var pMax = math.max(p1.x, p2.x);
+
+      if (minY < p1.y && p1.y < maxY) {
+        var start = math.max(minX, pMin);
+        var end = math.min(maxX, pMax);
+        if (start < end) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
 part1(data) {
   var points = parseInput(data).toList();
   var area = 0;
@@ -86,49 +125,23 @@ part1(data) {
 part2(data) {
   var points = parseInput(data);
   var (minPoint, maxPoint) = getBoundaries(points);
-  var area = 0;
+  var largestArea = 0;
   for (int i = 0; i < points.length - 1; i++) {
     for (int j = i + 1; j < points.length; j++) {
       var (p1, p2) = (points[i], points[j]);
-
-      // for (int dx = math.min(p1.x, p2.x); dx <= math.max(p1.x, p2.x); dx++) {
-      //   if (!checkRayCasting(Point(dx, p1.y), points, minPoint, maxPoint)) {
-      //     continue outerLoop;
-      //   }
-      //
-      //   if (!checkRayCasting(Point(dx, p2.y), points, minPoint, maxPoint)) {
-      //     continue outerLoop;
-      //   }
-      // }
-      // for (int dy = math.min(p1.y, p2.y); dy <= math.max(p1.y, p2.y); dy++) {
-      //   if (!checkRayCasting(Point(p1.x, dy), points, minPoint, maxPoint)) {
-      //     continue outerLoop;
-      //   }
-      //
-      //   if (!checkRayCasting(Point(p2.x, dy), points, minPoint, maxPoint)) {
-      //     continue outerLoop;
-      //   }
-      // }
-      var p12 = Point(p1.x, p2.y);
-      if (!checkRayCasting(p12, points, minPoint, maxPoint)) {
-        continue;
-      }
-
-      var p21 = Point(p2.x, p1.y);
-      if (!checkRayCasting(p21, points, minPoint, maxPoint)) {
-        continue;
-      }
-
-      var pm = Point((p1.x + p2.x) ~/ 2, (p1.y + p2.y) ~/ 2);
-      if (!checkRayCasting(pm, points, minPoint, maxPoint)) {
-        continue;
-      }
       var px = (p1.x - p2.x).abs() + 1;
       var py = (p1.y - p2.y).abs() + 1;
-      area = math.max(area, px * py);
+      var area = px * py;
+      if (area <= largestArea) {
+        continue;
+      }
+      if (!checkSegmentIntersection(p1, p2, points)) {
+        continue;
+      }
+      largestArea = area;
     }
   }
-  return area;
+  return largestArea;
 }
 
 void main() async {
@@ -137,6 +150,3 @@ void main() async {
   print('Day 09, part1: ${part1(input)}');
   print('Day 09, part2: ${part2(input)}');
 }
-
-// 4595056840 - too high
-// 4532204600 - too high
