@@ -22,7 +22,6 @@ class Point3D {
     return Object.hash(x, y, z);
   }
 
-  // Override toString for better debugging output.
   @override
   String toString() {
     return 'Point3D($x, $y, $z)';
