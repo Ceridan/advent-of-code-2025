@@ -18,73 +18,35 @@ class Node {
   }
 }
 
-class NodeState {
-  final int noneCount;
-  final int fftCount;
-  final int dacCount;
-  final int bothCount;
-
-  NodeState(this.noneCount, this.fftCount, this.dacCount, this.bothCount);
-}
-
-int countPaths(Map<String, Node> graph, String nodeName) {
+int countPaths(Map<String, Node> graph, String nodeName, bool seenFft,
+    bool seenDac, Map<(String, bool, bool), int> cache) {
   if (nodeName == 'out') {
-    return 1;
+    return (seenFft && seenDac) ? 1 : 0;
   }
 
+  var cacheKey = (nodeName, seenFft, seenDac);
+  if (cache.containsKey(cacheKey)) {
+    return cache[cacheKey]!;
+  }
+
+  var newSeenFft = (seenFft || (nodeName == 'fft'));
+  var newSeenDac = (seenDac || (nodeName == 'dac'));
   var paths = 0;
   for (var name in graph[nodeName]!.connections) {
-    paths += countPaths(graph, name);
+    paths += countPaths(graph, name, newSeenFft, newSeenDac, cache);
   }
+  cache[cacheKey] = paths;
   return paths;
-}
-
-NodeState countPathsFftDac(
-    Map<String, Node> graph, String nodeName, Map<String, NodeState> visited) {
-  if (nodeName == 'out') {
-    return NodeState(1, 0, 0, 0);
-  }
-
-  if (visited.containsKey(nodeName)) {
-    return visited[nodeName]!;
-  }
-
-  var noneCount = 0;
-  var fftCount = 0;
-  var dacCount = 0;
-  var bothCount = 0;
-  for (var name in graph[nodeName]!.connections) {
-    var state = countPathsFftDac(graph, name, visited);
-    noneCount += state.noneCount;
-    fftCount += state.fftCount;
-    dacCount += state.dacCount;
-    bothCount += state.bothCount;
-  }
-
-  if (nodeName == 'fft') {
-    bothCount += dacCount;
-    fftCount += noneCount;
-    noneCount = 0;
-  } else if (nodeName == 'dac') {
-    bothCount += fftCount;
-    dacCount += noneCount;
-    noneCount = 0;
-  }
-
-  var newState = NodeState(noneCount, fftCount, dacCount, bothCount);
-  visited[nodeName] = newState;
-  return newState;
 }
 
 part1(data) {
   var graph = Node.parseGraph(data);
-  return countPaths(graph, 'you');
+  return countPaths(graph, 'you', true, true, {});
 }
 
 part2(data) {
   var graph = Node.parseGraph(data);
-  var counts = countPathsFftDac(graph, 'svr', {});
-  return counts.bothCount;
+  return countPaths(graph, 'svr', false, false, {});
 }
 
 void main() async {
