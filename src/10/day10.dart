@@ -1,5 +1,5 @@
-import '../lib/io.dart';
 import 'dart:collection';
+import '../lib/io.dart';
 import '../lib/z3.dart';
 
 class Schema {
@@ -37,28 +37,20 @@ class Schema {
   }
 }
 
-String diagramString(List<bool> diagram) {
-  return diagram.map((l) => l ? '#' : '.').join();
-}
+bool isEqualStates(List<bool> state1, List<bool> state2) {
+  if (state1.length != state2.length) {
+    return false;
+  }
 
-String joltagesString(List<int> joltages) {
-  return joltages.join(',');
-}
-
-int checkState(List<int> ethalon, List<int> current) {
-  for (int i = 0; i < ethalon.length; i++) {
-    if (ethalon[i] > current[i]) {
-      return 1;
-    }
-    if (ethalon[i] < current[i]) {
-      return 2;
+  for (int i = 0; i < state1.length; i++) {
+    if (state1[i] != state2[i]) {
+      return false;
     }
   }
-  return 0;
+  return true;
 }
 
-int calculateMinPress(Schema schema) {
-  var ethalon = diagramString(schema.diagram);
+int calculatePressCount(Schema schema) {
   var emptyDiagram = List<bool>.filled(schema.diagram.length, false);
   var visited = <String>{};
   var states = schema.buttons.map((btn) => (btn, emptyDiagram, 0)).toList();
@@ -69,34 +61,35 @@ int calculateMinPress(Schema schema) {
     for (var b in btn) {
       newState[b] = !newState[b];
     }
-    var stateStr = diagramString(newState);
-    if (stateStr == ethalon) {
+    if (isEqualStates(schema.diagram, newState)) {
       return clicks + 1;
     }
-    if (visited.contains(stateStr)) {
+    var key = newState.join(',');
+    if (visited.contains(key)) {
       continue;
     }
-    visited.add(stateStr);
+    visited.add(key);
     schema.buttons.forEach((b) => queue.add((b, newState, clicks + 1)));
   }
   return -1;
 }
 
-List<int> solveWithZ3(List<List<int>> buttons, List<int> target) {
+List<int> solveWithZ3(Schema schema) {
   var buttonMatrix = <List<int>>[];
-  for (int i = 0; i < target.length; i++) {
+  for (int i = 0; i < schema.joltages.length; i++) {
     var buttonArr = <int>[];
-    for (var button in buttons) {
+    for (var button in schema.buttons) {
       var coeff = (button.contains(i) ? 1 : 0);
       buttonArr.add(coeff);
     }
     buttonMatrix.add(buttonArr);
   }
 
-  var result = Z3Solver().solveLP(buttonMatrix, target);
+  var result = Z3Solver().solveLP(buttonMatrix, schema.joltages);
 
   if (result == null) {
-    throw Exception('No solution for target = $target');
+    throw Exception(
+        'No solution for buttons = ${schema.buttons} and joltages = ${schema.joltages}');
   }
 
   return result;
@@ -104,7 +97,7 @@ List<int> solveWithZ3(List<List<int>> buttons, List<int> target) {
 
 part1(data) {
   var schemas = (data as List<String>).map(Schema.fromString).toList();
-  var totalPress = schemas.map(calculateMinPress).reduce((acc, p) => acc + p);
+  var totalPress = schemas.map(calculatePressCount).reduce((acc, p) => acc + p);
   return totalPress;
 }
 
@@ -112,7 +105,7 @@ part2(data) {
   var schemas = (data as List<String>).map(Schema.fromString).toList();
   var totalPress = 0;
   for (var schema in schemas) {
-    var result = solveWithZ3(schema.buttons, schema.joltages);
+    var result = solveWithZ3(schema);
     totalPress += result.reduce((acc, x) => acc + x);
   }
   return totalPress;

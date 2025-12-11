@@ -18,7 +18,6 @@ class Z3Solver {
 
     var x = List.generate(numCols, (i) => constVar('x$i', intSort));
 
-    // var zero = rat(IntNumeral.from(0).toRat());
     var zero = IntNumeral.from(0);
     for (var xi in x) {
       opt.add(ge(xi, zero));
@@ -29,22 +28,21 @@ class Z3Solver {
       for (int j = 0; j < numCols; j++) {
         var value = A[i][j];
         if (value != 0) {
-          // var coeff = rat(IntNumeral.from(value).toRat());
           var coeff = IntNumeral.from(value);
           rowTerms.add(mul(coeff, x[j]));
         }
       }
 
       var rowSum = rowTerms.isEmpty ? zero : addN(rowTerms);
-      // var rowRhs = rat(IntNumeral.from(b[i]).toRat());
       var rowRhs = IntNumeral.from(b[i]);
       opt.add(eq(rowSum, rowRhs));
     }
 
-    var objectiveFunction = addN(x);
-    opt.minimize(objectiveFunction);
+    var objective = addN(x);
+    opt.minimize(objective);
 
-    if (!(opt.check() ?? false)) {
+    var checkResult = opt.check() ?? false;
+    if (!checkResult) {
       return null;
     }
 
