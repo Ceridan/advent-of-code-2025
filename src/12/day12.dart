@@ -82,11 +82,11 @@ class Region {
 // I failed to find a solution in a finite time and ended up with a heuristic.
 // Looking at the example data I noticed that all the presents occupy 7 out of 9 tiles.
 // In my input however, only 4 tiles have this property. I started to think how they can be combined together,
-// and figured out that on average, combining any two tiles occupy 8 out of 9 tiles.
+// and figured out that on average combining any two tiles occupy 8 out of 9 tiles.
 // Having this assumption, we can think in terms of occupied tiles instead of different shapes.
 // We can say that presents fit to the region if the sum of the presents multiplied by 8
 // less then region area.
-// Alternative approach was to calculate real tile sum such as for each present multiplie count on present size.
+// Alternative approach was to calculate real tile sum such as for each present multiply count on present size.
 // It gives the same correct result on my input but fails on the example.
 part1(data) {
   var (presents, regions) = parseInput(data);
